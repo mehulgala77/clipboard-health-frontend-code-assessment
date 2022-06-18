@@ -1,0 +1,105 @@
+
+---------------------------------------------------------------------------------------------------
+
+Sample Data Model: 
+
+Facilities
+  - Facility Id (Primary Key)
+  - Facility Name
+
+Agents
+  - Agent Id (Primary Key)
+  - Agent Name
+
+Shifts
+  [Note: This table will have composite primary Key of Facility Id and Agent Id ]
+  - Facility Id (Primary Key)
+  - Agent Id (Primary Key)
+  - Custom Agent Id (*** New Id Added by Facilities to identify the Agent ***)
+  - Shift Start Time
+  - Shift End Time
+
+---------------------------------------------------------------------------------------------------
+
+Overall plan: 
+1. Facilities will Generate New Custom Agent Id when a new Shift Request comes.
+2. New Custom Agent Id will get stored in the shifts table against every shift entry.
+3. 'getShiftsByFacility' will only send Custom Agent Id back to the caller. 
+   The database Agent Id should not be present in the response.
+4. 'generateReport' will only have the Custom Agent Id.
+
+---------------------------------------------------------------------------------------------------
+
+Ticket 1: Generate Custom Agent Id for Every New Agent 
+
+Description: Facilities will generate a new Custom Agent Id for every new Agent 
+when he sends a request for a shift.
+
+Acceptance Criteria: 
+1. For New Agent Request, Custom Id should be created. 
+2. Mapping between Agent Database Id and Custom Agent Id should be established.
+3. For Existing Agent Request, same Custom Id should be used.
+
+Effort Estimation: 
+  - 16 hours work (including unit test case writing and execution)
+
+Implementation Details: 
+1. Create a mapping table between Agent Database Id and New Custom Agent Id.
+2. When an agent sends a request for new shift entry to any facility for the first time, 
+   create a new Id (based on any logic. It can be uuid or combination of their first and last name, etc).
+3. Add a new mapping entry for New Custom Agent Id vs Agent Database Id.
+4. When an agent sends a request for new shift entry to any facility for subsequent times, fetch this 
+   Custom Id from the mapping.
+
+---------------------------------------------------------------------------------------------------
+
+Ticket 2: Attach New Custom Agent Id in every Shift Entry
+
+Description: When a new Shift entry is recorded for every Agent, the Custom Agent Id, generated 
+by the Facilities should be inserted in the database for every record. 
+
+Acceptance Criteria: 
+1. Fetch Custom Agent Id for the Agent. 
+2. Insert the Custom Agent Id in every Shift Record.
+
+Effort Estimation: 
+  - 8 hours work (including unit test case writing and execution)
+
+Implementation Details: 
+1. Create a new database column for Custom Agent Id.
+2. Fetch the Custom Agent Id for the Agent from the Facilities when the request for adding new Shift comes.
+3. Add the Custom Agent Id in the Shift table record. 
+
+---------------------------------------------------------------------------------------------------
+
+Ticket 3: Fetch Custom Agent Id when Shifts are fetched based on the Facilities
+
+Description: When request for 'getShiftsByFacility' comes, the Custom Agent Id should be present in 
+the response for every Shift Record.
+
+Acceptance Criteria: 
+1. Custom Agent Id should be present in the response for every Shift Record while fetching shifts based on facility id.
+
+Effort Estimation: 
+  - 6 hours work (including unit test case writing and execution)
+
+Implementation Details: 
+1. In the Database Search Query to fetch all shifts based on the facility id, 
+  add a new result field to return Custom Agent Id. 
+2. Do not send Database Agent Id as it is not needed in the Report.
+
+---------------------------------------------------------------------------------------------------
+
+Ticket 4: Custom Agent Id should be present in the Report pdf File. 
+
+Acceptance Criteria: Custom Agent Id should be present while generating the final report based 
+  on 'getShiftsByFacility' shifts. 
+
+Effort Estimation: 
+  - 4 hours work (including unit test case writing and execution)
+
+Implementation Details: 
+1. Fetch the Shift details given by the getShiftsByFacility function.
+2. Use the Custom Agent Id returned from this function in every shift record while generating the pdf report. 
+
+---------------------------------------------------------------------------------------------------
